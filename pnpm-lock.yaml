@@ -58,7 +58,7 @@ importers:
         version: 14.2.35(@babel/core@7.29.7)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       next-auth:
         specifier: ^5.0.0-beta
-        version: 5.0.0-beta.32(next@14.2.35(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+        version: 5.0.0-beta.32(next@14.2.35(@babel/core@7.29.7)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       react:
         specifier: ^18.3.0
         version: 18.3.1
@@ -98,7 +98,10 @@ importers:
         version: 11.18.0(typescript@5.9.3)
       next-auth:
         specifier: ^5.0.0-beta
-        version: 5.0.0-beta.32(next@14.2.35(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+        version: 5.0.0-beta.32(next@14.2.35(@babel/core@7.29.7)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+      psn-api:
+        specifier: ^2.18.1
+        version: 2.18.1
       zod:
         specifier: ^3.23.0
         version: 3.25.76
@@ -1476,6 +1479,10 @@ packages:
     engines: {node: '>=16.13'}
     hasBin: true
 
+  psn-api@2.18.1:
+    resolution: {integrity: sha512-D0oVrJK+hVwJFARp2Io/auqJwjRx2t7x4Cke7mYNFbrOUQxSBONl0fHr4eVK5Bai89RNyaAsLPLFmgIw9pxzmQ==}
+    engines: {node: '>=20', pnpm: '>=10'}
+
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
@@ -2798,7 +2805,7 @@ snapshots:
 
   natural-compare@1.4.0: {}
 
-  next-auth@5.0.0-beta.32(next@14.2.35(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1):
+  next-auth@5.0.0-beta.32(next@14.2.35(@babel/core@7.29.7)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1):
     dependencies:
       '@auth/core': 0.41.3
       next: 14.2.35(@babel/core@7.29.7)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -2964,6 +2971,8 @@ snapshots:
       '@prisma/engines': 5.22.0
     optionalDependencies:
       fsevents: 2.3.3
+
+  psn-api@2.18.1: {}
 
   punycode@2.3.1: {}
 
