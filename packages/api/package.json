@@ -1,6 +1,9 @@
 {
   "name": "@gamertakes/api",
   "version": "0.1.0",
+  "scripts": {
+    "test": "vitest run"
+  },
   "dependencies": {
     "@gamertakes/db": "workspace:*",
     "@gamertakes/types": "workspace:*",
@@ -9,6 +12,7 @@
     "next-auth": "^5.0.0-beta"
   },
   "exports": {
-    ".": "./root.ts"
+    ".": "./root.ts",
+    "./trpc": "./trpc.ts"
   }
 }
