@@ -7,6 +7,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      '@/jobs': path.resolve(__dirname, '../../jobs'),
       '@': path.resolve(__dirname, '.'),
     },
   },

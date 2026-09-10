@@ -1,0 +1,7 @@
+{
+  "crons": [
+    { "path": "/api/cron/compute-popular", "schedule": "0 1 * * *" },
+    { "path": "/api/cron/sync-opencritic", "schedule": "0 2 * * *" },
+    { "path": "/api/cron/refresh-igdb", "schedule": "0 3 * * 0" }
+  ]
+}
