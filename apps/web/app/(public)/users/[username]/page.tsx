@@ -63,7 +63,7 @@ export default async function UserProfilePage({ params }: PageProps) {
         {activities.length === 0 ? (
           <p className="text-gray-400 text-sm p-6 text-center">No activity yet.</p>
         ) : (
-          activities.map((a) => <ActivityItem key={a.id} activity={a as any} />)
+          activities.map((a) => <ActivityItem key={a.id} activity={a as never} />)
         )}
       </div>
     </div>

@@ -31,7 +31,7 @@ export interface PSNGame {
 export async function fetchPSNLibrary(npssoToken: string): Promise<PSNGame[]> {
   const accessCode = await exchangeNpssoForCode(npssoToken)
   const auth = await exchangeCodeForAccessToken(accessCode)
-  const response = await getUserPlayedGames({ accessToken: auth.accessToken })
+  const response = await getUserPlayedGames(auth, 'me')
   return (response.titles ?? []).map((t: { titleId: string; name: string; playDuration?: string; playCount?: number }) => ({
     titleId: t.titleId,
     name: t.name,

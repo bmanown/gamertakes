@@ -54,7 +54,7 @@ export default function LibraryPage() {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {entries?.map((entry) => (
-            <GameCard key={entry.id} game={entry.game} entry={entry} />
+            <GameCard key={entry.id} game={entry.game as never} entry={entry as never} />
           ))}
         </div>
       )}

@@ -8,7 +8,7 @@ interface ReviewCardProps {
     id: string
     body: string
     containsSpoilers: boolean
-    createdAt: Date
+    createdAt: Date | string
     user: { username: string; displayName: string | null; avatarUrl: string | null }
     entry: { rating: number | null }
     likes: { userId: string }[]

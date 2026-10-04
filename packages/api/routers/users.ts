@@ -20,11 +20,18 @@ export const usersRouter = createTRPCRouter({
 
   updateProfile: protectedProcedure
     .input(z.object({
+      username: z.string().min(3).max(24).regex(/^[a-zA-Z0-9_]+$/).optional(),
       displayName: z.string().max(100).optional(),
       bio: z.string().max(500).optional(),
       isPrivate: z.boolean().optional(),
     }))
     .mutation(async ({ input, ctx }) => {
+      if (input.username) {
+        const taken = await ctx.db.user.findFirst({
+          where: { username: input.username, NOT: { id: ctx.session.user.id } },
+        })
+        if (taken) throw new TRPCError({ code: 'CONFLICT', message: 'Username is taken' })
+      }
       return ctx.db.user.update({
         where: { id: ctx.session.user.id },
         data: input,

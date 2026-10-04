@@ -23,7 +23,7 @@ export function StatusPicker({ value, onChange }: StatusPickerProps) {
   const selected = STATUSES.find((s) => s.value === value)
 
   return (
-    <Listbox value={value} onChange={onChange}>
+    <Listbox value={value ?? undefined} onChange={onChange}>
       <div className="relative">
         <ListboxButton className="flex w-48 items-center justify-between rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-500">
           <span>{selected?.label ?? 'Add to Library'}</span>

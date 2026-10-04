@@ -1,7 +1,17 @@
 import { initTRPC, TRPCError } from '@trpc/server'
-import { type Session } from 'next-auth'
 import { ZodError } from 'zod'
 import { db } from '@gamertakes/db'
+
+export interface Session {
+  user: {
+    id: string
+    username?: string
+    email?: string | null
+    name?: string | null
+    image?: string | null
+  }
+  expires: string
+}
 
 export interface Context {
   session: Session | null

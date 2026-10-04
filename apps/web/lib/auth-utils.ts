@@ -22,7 +22,7 @@ export function jwtCallback({
   token,
   user,
 }: {
-  token: { id?: string; username?: string }
+  token: { id?: string; username?: string; [key: string]: unknown }
   user?: { id: string; username?: string | null }
 }) {
   if (user) {
@@ -32,13 +32,13 @@ export function jwtCallback({
   return token
 }
 
-export function sessionCallback({
+export function sessionCallback<T extends { user: { id?: string; username?: string } }>({
   session,
   token,
 }: {
-  session: { user: { id?: string; username?: string } }
-  token: { id?: string; username?: string }
-}) {
+  session: T
+  token: { id?: string; username?: string; [key: string]: unknown }
+}): T {
   if (token) {
     session.user.id = token.id as string
     session.user.username = token.username as string

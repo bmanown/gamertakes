@@ -1,12 +1,15 @@
 'use client'
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { GameCard } from '@/components/game/GameCard'
 import { useSession } from 'next-auth/react'
 
-export default function BrowsePage() {
-  const [query, setQuery] = useState('')
-  const [debouncedQuery, setDebouncedQuery] = useState('')
+function BrowsePageInner() {
+  const searchParams = useSearchParams()
+  const initialQuery = searchParams.get('q') ?? ''
+  const [query, setQuery] = useState(initialQuery)
+  const [debouncedQuery, setDebouncedQuery] = useState(initialQuery)
   const { data: session } = useSession()
 
   const { data: games, isLoading } = trpc.games.search.useQuery(
@@ -37,9 +40,17 @@ export default function BrowsePage() {
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {games?.map((game) => <GameCard key={game.id} game={game} />)}
+          {games?.map((game) => <GameCard key={game.id} game={game as never} />)}
         </div>
       )}
     </div>
+  )
+}
+
+export default function BrowsePage() {
+  return (
+    <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-8 text-sm text-gray-400">Loading games…</div>}>
+      <BrowsePageInner />
+    </Suspense>
   )
 }

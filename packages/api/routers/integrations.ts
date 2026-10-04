@@ -66,10 +66,7 @@ export const integrationsRouter = createTRPCRouter({
   }),
 })
 
-async function syncSteamForUser(userId: string, steamId: string, db: {
-  game: { findFirst: (args: unknown) => Promise<{ id: string } | null> }
-  gameEntry: { upsert: (args: unknown) => Promise<unknown> }
-}) {
+async function syncSteamForUser(userId: string, steamId: string, db: any) {
   const steamGames = await fetchSteamLibrary(steamId)
   let updated = 0
 
@@ -97,10 +94,7 @@ async function syncSteamForUser(userId: string, steamId: string, db: {
   return { updated }
 }
 
-async function syncPSNGames(userId: string, games: { name: string; playDuration: string }[], db: {
-  game: { findFirst: (args: unknown) => Promise<{ id: string } | null> }
-  gameEntry: { upsert: (args: unknown) => Promise<unknown> }
-}) {
+async function syncPSNGames(userId: string, games: { name: string; playDuration: string }[], db: any) {
   let updated = 0
   for (const psnGame of games) {
     let game = await db.game.findFirst({

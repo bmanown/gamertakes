@@ -4,13 +4,25 @@ import { ActivityItem } from '@/components/social/ActivityItem'
 import { GameCard } from '@/components/game/GameCard'
 import { useSession } from 'next-auth/react'
 
+type FeedActivity = {
+  id: string
+  type: string
+  createdAt: Date
+  metadata: unknown
+  user: { username: string; displayName: string | null; avatarUrl: string | null }
+  game: { slug: string; title: string; coverImage: string | null } | null
+}
+
 export default function DashboardPage() {
   const { data: session } = useSession()
-  const { data: feedData, isLoading: feedLoading } = trpc.social.getFeed.useQuery({ limit: 20 })
-  const { data: playing } = trpc.library.getLibrary.useQuery(
+  const feedQuery = trpc.social.getFeed.useQuery({ limit: 20 })
+  const feedLoading = feedQuery.isLoading
+  const activities = ((feedQuery.data as { activities?: FeedActivity[] } | undefined)?.activities ?? [])
+  const libraryQuery = trpc.library.getLibrary.useQuery(
     { userId: session?.user?.id ?? '', status: 'PLAYING' },
     { enabled: !!session?.user?.id }
   )
+  const playing = libraryQuery.data as Array<{ id: string; game: never; status: string }> | undefined
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -26,13 +38,15 @@ export default function DashboardPage() {
                   <div key={i} className="h-12 bg-gray-100 rounded animate-pulse" />
                 ))}
               </div>
-            ) : feedData?.activities.length === 0 ? (
+            ) : activities.length === 0 ? (
               <p className="p-6 text-sm text-gray-400 text-center">
                 Follow some users to see their activity here.
               </p>
             ) : (
               <div className="divide-y divide-gray-100">
-                {feedData?.activities.map((a) => <ActivityItem key={a.id} activity={a as any} />)}
+                {activities.map((a) => (
+                  <ActivityItem key={a.id} activity={a} />
+                ))}
               </div>
             )}
           </div>
@@ -43,7 +57,7 @@ export default function DashboardPage() {
           <h2 className="text-lg font-semibold mb-4">Currently Playing</h2>
           <div className="space-y-3">
             {playing?.slice(0, 5).map((entry) => (
-              <GameCard key={entry.id} game={entry.game} entry={entry} />
+              <GameCard key={entry.id} game={entry.game as never} entry={entry as never} />
             ))}
             {!playing?.length && (
               <p className="text-sm text-gray-400">Nothing in progress. Start a game!</p>
