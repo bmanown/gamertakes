@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "pnpm --filter @gamertakes/db generate && next build",
+    "build": "pnpm --filter @gamertakes/db generate && node ../../scripts/copy-prisma-client.mjs && next build",
     "start": "next start",
     "lint": "next lint",
     "test": "vitest"

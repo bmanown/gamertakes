@@ -18,12 +18,16 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const game = await db.game.findUnique({ where: { slug: params.slug } })
-  if (!game) return {}
-  return {
-    title: game.title,
-    description: game.description?.slice(0, 160),
-    openGraph: { images: game.coverImage ? [game.coverImage] : [] },
+  try {
+    const game = await db.game.findUnique({ where: { slug: params.slug } })
+    if (!game) return {}
+    return {
+      title: game.title,
+      description: game.description?.slice(0, 160),
+      openGraph: { images: game.coverImage ? [game.coverImage] : [] },
+    }
+  } catch {
+    return {}
   }
 }
 
