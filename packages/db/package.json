@@ -6,6 +6,7 @@
     "db:migrate": "prisma migrate dev --schema=./schema.prisma",
     "db:studio": "prisma studio --schema=./schema.prisma",
     "generate": "prisma generate --schema=./schema.prisma",
+    "build": "prisma generate --schema=./schema.prisma",
     "test": "vitest run"
   },
   "dependencies": {

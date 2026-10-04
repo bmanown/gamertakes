@@ -12,10 +12,11 @@ function BrowsePageInner() {
   const [debouncedQuery, setDebouncedQuery] = useState(initialQuery)
   const { data: session } = useSession()
 
-  const { data: games, isLoading } = trpc.games.search.useQuery(
+  const { data, isLoading } = trpc.games.search.useQuery(
     { query: debouncedQuery || 'zelda' },
     { enabled: true }
   )
+  const games = data as Array<{ id: string }> | undefined
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">

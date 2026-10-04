@@ -17,10 +17,11 @@ export default function LibraryPage() {
   const { data: session } = useSession()
   const [activeStatus, setActiveStatus] = useState<string | undefined>(undefined)
 
-  const { data: entries, isLoading } = trpc.library.getLibrary.useQuery(
+  const { data, isLoading } = trpc.library.getLibrary.useQuery(
     { userId: session?.user?.id ?? '', status: activeStatus as any },
     { enabled: !!session?.user?.id }
   )
+  const entries = data as Array<{ id: string; game: never }> | undefined
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
