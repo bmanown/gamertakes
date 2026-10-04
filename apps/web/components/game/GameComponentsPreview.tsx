@@ -22,6 +22,8 @@ const sampleGame = {
   openCriticPercent: 98,
   openCriticTier: 'Mighty',
   openCriticLastSync: null,
+  igdbCategory: 0,
+  isOfficial: true,
   igdbLastSync: new Date(),
   similarGames: [],
   screenshots: [],

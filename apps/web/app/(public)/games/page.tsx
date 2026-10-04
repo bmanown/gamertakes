@@ -3,17 +3,17 @@ import { Suspense, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { GameCard } from '@/components/game/GameCard'
-import { useSession } from 'next-auth/react'
+import { OfficialFilterChips } from '@/components/game/OfficialFilterChips'
 
 function BrowsePageInner() {
   const searchParams = useSearchParams()
   const initialQuery = searchParams.get('q') ?? ''
   const [query, setQuery] = useState(initialQuery)
   const [debouncedQuery, setDebouncedQuery] = useState(initialQuery)
-  const { data: session } = useSession()
+  const [officialOnly, setOfficialOnly] = useState(true)
 
   const { data, isLoading } = trpc.games.search.useQuery(
-    { query: debouncedQuery || 'zelda' },
+    { query: debouncedQuery || 'zelda', official: officialOnly },
     { enabled: true }
   )
   const games = data as Array<{ id: string }> | undefined
@@ -30,8 +30,12 @@ function BrowsePageInner() {
           clearTimeout((window as any).__searchTimer)
           ;(window as any).__searchTimer = setTimeout(() => setDebouncedQuery(e.target.value), 400)
         }}
-        className="w-full max-w-xl rounded-xl border border-gray-200 px-4 py-2 text-sm mb-8 focus:outline-none focus:ring-2 focus:ring-brand-500"
+        className="w-full max-w-xl rounded-xl border border-gray-200 px-4 py-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-brand-500"
       />
+
+      <div className="mb-8">
+        <OfficialFilterChips officialOnly={officialOnly} onChange={setOfficialOnly} />
+      </div>
 
       {isLoading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">

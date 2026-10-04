@@ -1,4 +1,5 @@
 import { db, type Game } from '@gamertakes/db'
+import { isOfficialFromIGDB, officialCategoryId } from './official'
 
 const IGDB_BASE = 'https://api.igdb.com/v4'
 
@@ -48,13 +49,18 @@ export interface IGDBGame {
   similar_games?: number[]
   screenshots?: { url: string }[]
   aggregated_rating?: number
+  category?: number
+  game_type?: number | { id?: number; type?: string }
 }
 
 export async function searchIGDB(
   query: string,
-  filters?: { platform?: string; genre?: string; year?: number }
+  filters?: { platform?: string; genre?: string; year?: number; official?: boolean }
 ): Promise<IGDBGame[]> {
   let where = `version_parent = null`
+  if (filters?.official !== false) {
+    where += ` & (game_type.type = ("Main Game","Remake","Remaster") | category = (0,8,9))`
+  }
   if (filters?.year) {
     const start = new Date(filters.year, 0, 1).getTime() / 1000
     const end = new Date(filters.year + 1, 0, 1).getTime() / 1000
@@ -63,14 +69,14 @@ export async function searchIGDB(
 
   return igdbRequest<IGDBGame[]>(
     'games',
-    `search "${query}"; fields id,name,slug,summary,cover.url,first_release_date,platforms.name,genres.name,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,similar_games,screenshots.url,aggregated_rating; where ${where}; limit 20;`
+    `search "${query}"; fields id,name,slug,summary,cover.url,first_release_date,platforms.name,genres.name,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,similar_games,screenshots.url,aggregated_rating,category,game_type.type; where ${where}; limit 20;`
   )
 }
 
 export async function fetchIGDBGame(igdbId: number): Promise<IGDBGame> {
   const results = await igdbRequest<IGDBGame[]>(
     'games',
-    `fields id,name,slug,summary,cover.url,first_release_date,platforms.name,genres.name,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,similar_games,screenshots.url,aggregated_rating; where id = ${igdbId};`
+    `fields id,name,slug,summary,cover.url,first_release_date,platforms.name,genres.name,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,similar_games,screenshots.url,aggregated_rating,category,game_type.type; where id = ${igdbId};`
   )
   if (!results.length) throw new Error(`IGDB game ${igdbId} not found`)
   return results[0]
@@ -103,6 +109,8 @@ export async function upsertGameFromIGDB(igdbGame: IGDBGame): Promise<Game> {
       publisher: publisher ?? null,
       similarGames: igdbGame.similar_games ?? [],
       screenshots,
+      igdbCategory: officialCategoryId(igdbGame),
+      isOfficial: isOfficialFromIGDB(igdbGame),
     },
     update: {
       title: igdbGame.name,
@@ -117,6 +125,8 @@ export async function upsertGameFromIGDB(igdbGame: IGDBGame): Promise<Game> {
       publisher: publisher ?? null,
       similarGames: igdbGame.similar_games ?? [],
       screenshots,
+      igdbCategory: officialCategoryId(igdbGame),
+      isOfficial: isOfficialFromIGDB(igdbGame),
       igdbLastSync: new Date(),
     },
   })

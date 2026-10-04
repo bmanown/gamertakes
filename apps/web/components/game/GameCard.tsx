@@ -39,6 +39,11 @@ export function GameCard({ game, entry }: GameCardProps) {
             {status.label}
           </span>
         )}
+        {game.isOfficial === false && (
+          <span className="absolute top-2 right-2 rounded-md bg-black/70 px-2 py-0.5 text-xs font-medium text-white">
+            Unofficial
+          </span>
+        )}
       </div>
       <div className="mt-2 space-y-1">
         <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 group-hover:text-brand-600">

@@ -23,18 +23,12 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }))
 
-vi.mock('@gamertakes/api/trpc', () => ({
-  createCallerFactory: () => () => ({
-    games: { getPopular },
-  }),
-}))
-
-vi.mock('@gamertakes/api', () => ({ appRouter: {} }))
-vi.mock('@gamertakes/db', () => ({ db: {} }))
-
 vi.mock('@/lib/trpc', () => ({
   trpc: {
-    games: { search: { useQuery: searchQuery } },
+    games: {
+      search: { useQuery: searchQuery },
+      getPopular: { useQuery: getPopular },
+    },
     library: { getLibrary: { useQuery: getLibrary } },
   },
 }))
@@ -64,6 +58,8 @@ function game(overrides: Partial<Game> = {}): Game {
     igdbLastSync: new Date(),
     similarGames: [],
     screenshots: [],
+    igdbCategory: 0,
+    isOfficial: true,
     popularityScore: 10,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -73,12 +69,14 @@ function game(overrides: Partial<Game> = {}): Game {
 
 describe('LandingPage', () => {
   it('renders the hero and popular games', async () => {
-    getPopular.mockResolvedValue([game()])
+    getPopular.mockReturnValue({ data: [game()], isLoading: false })
     const { default: LandingPage } = await import('../app/(public)/page')
-    const html = renderToStaticMarkup(await LandingPage())
+    const html = renderToStaticMarkup(createElement(LandingPage))
     expect(html).toContain('Track every game you play.')
     expect(html).toContain('Popular Games')
     expect(html).toContain('Celeste')
+    expect(html).toContain('Official releases')
+    expect(html).toContain('All games')
     expect(html).toContain('/auth/signup')
     expect(html).toContain('/games')
   })
@@ -92,6 +90,8 @@ describe('BrowsePage', () => {
     expect(html).toContain('Browse Games')
     expect(html).toContain('Search games...')
     expect(html).toContain('Celeste')
+    expect(html).toContain('Official releases')
+    expect(html).toContain('All games')
   })
 })
 

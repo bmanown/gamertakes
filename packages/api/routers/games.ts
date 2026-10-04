@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { createTRPCRouter, publicProcedure } from '../trpc'
 import { searchIGDB, upsertGameFromIGDB } from '../lib/igdb'
 import { fillCriticScore } from '../lib/opencritic'
+import { officialGameWhere } from '../lib/official'
 import { TRPCError } from '@trpc/server'
 
 export const gamesRouter = createTRPCRouter({
@@ -11,6 +12,7 @@ export const gamesRouter = createTRPCRouter({
       platform: z.string().optional(),
       genre: z.string().optional(),
       year: z.number().int().optional(),
+      official: z.boolean().default(true),
     }))
     .query(async ({ input, ctx }) => {
       // First check local cache
@@ -19,6 +21,7 @@ export const gamesRouter = createTRPCRouter({
           title: { contains: input.query, mode: 'insensitive' },
           ...(input.platform ? { platforms: { has: input.platform } } : {}),
           ...(input.genre ? { genres: { has: input.genre } } : {}),
+          ...(input.official ? officialGameWhere() : {}),
         },
         take: 20,
         orderBy: { popularityScore: 'desc' },
@@ -30,6 +33,7 @@ export const gamesRouter = createTRPCRouter({
         platform: input.platform,
         genre: input.genre,
         year: input.year,
+        official: input.official,
       })
       const games = await Promise.all(igdbResults.map(upsertGameFromIGDB))
       return games
@@ -70,9 +74,13 @@ export const gamesRouter = createTRPCRouter({
     }),
 
   getPopular: publicProcedure
-    .input(z.object({ limit: z.number().int().min(1).max(50).default(12) }))
+    .input(z.object({
+      limit: z.number().int().min(1).max(50).default(12),
+      official: z.boolean().default(true),
+    }))
     .query(async ({ input, ctx }) => {
       return ctx.db.game.findMany({
+        where: input.official ? officialGameWhere() : undefined,
         orderBy: { popularityScore: 'desc' },
         take: input.limit,
       })

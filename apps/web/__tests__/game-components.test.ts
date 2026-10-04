@@ -36,6 +36,8 @@ function game(overrides: Partial<Game> = {}): Game {
     igdbLastSync: new Date(),
     similarGames: [],
     screenshots: [],
+    igdbCategory: 0,
+    isOfficial: true,
     popularityScore: 0,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -77,5 +79,10 @@ describe('GameCard', () => {
     const entry = { status: 'PLAYING' } as GameEntry
     const html = renderToStaticMarkup(createElement(GameCard, { game: game(), entry }))
     expect(html).toContain('Playing')
+  })
+
+  it('marks unofficial IGDB extras on the cover', () => {
+    const html = renderToStaticMarkup(createElement(GameCard, { game: game({ isOfficial: false }) }))
+    expect(html).toContain('Unofficial')
   })
 })

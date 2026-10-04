@@ -35,4 +35,15 @@ describe('searchIGDB', () => {
     const results = await searchIGDB('xyznotarealquery')
     expect(results).toEqual([])
   })
+
+  it('asks IGDB for official categories by default', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [],
+    } as never)
+    await searchIGDB('zelda')
+    const body = String((global.fetch as ReturnType<typeof vi.fn>).mock.calls.at(-1)?.[1]?.body ?? '')
+    expect(body).toContain('game_type.type = ("Main Game","Remake","Remaster")')
+    expect(body).toContain('category = (0,8,9)')
+  })
 })
