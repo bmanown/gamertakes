@@ -7,6 +7,7 @@ import { usersRouter } from './routers/users'
 import { socialRouter } from './routers/social'
 import { activityRouter } from './routers/activity'
 import { integrationsRouter } from './routers/integrations'
+import { newsRouter } from './routers/news'
 
 export const appRouter = createTRPCRouter({
   games: gamesRouter,
@@ -17,6 +18,7 @@ export const appRouter = createTRPCRouter({
   social: socialRouter,
   activity: activityRouter,
   integrations: integrationsRouter,
+  news: newsRouter,
 })
 
 export type AppRouter = typeof appRouter

@@ -34,6 +34,8 @@ describe('Navbar', () => {
     expect(html).toContain('/auth/signup')
     expect(html).toContain('Sign Up')
     expect(html).toContain('Search games...')
+    expect(html).toContain('/news')
+    expect(html).toContain('News')
   })
 
   it('shows library, dashboard, and Sign Out when signed in', async () => {

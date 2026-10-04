@@ -10,10 +10,14 @@
     "@trpc/server": "^11.0.0",
     "next-auth": "^5.0.0-beta",
     "psn-api": "^2.18.1",
+    "rss-parser": "^3.13.0",
     "zod": "^3.23.0"
   },
   "exports": {
     ".": "./root.ts",
     "./trpc": "./trpc.ts"
+  },
+  "devDependencies": {
+    "vitest": "1.6.0"
   }
 }

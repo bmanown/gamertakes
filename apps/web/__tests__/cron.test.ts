@@ -12,9 +12,14 @@ vi.mock('@/jobs/computePopular', () => ({
   computePopularGames: vi.fn(async () => ({ updated: 1 })),
 }))
 
+vi.mock('@/jobs/fetchNews', () => ({
+  fetchAllNews: vi.fn(async () => ({ fetched: 12, sources: 6 })),
+}))
+
 import { GET as computePopular } from '../app/api/cron/compute-popular/route'
 import { GET as syncOpenCritic } from '../app/api/cron/sync-opencritic/route'
 import { GET as refreshIgdb } from '../app/api/cron/refresh-igdb/route'
+import { GET as fetchNews } from '../app/api/cron/fetch-news/route'
 
 const CRON_SECRET = 'test-cron-secret'
 process.env.CRON_SECRET = CRON_SECRET
@@ -44,5 +49,11 @@ describe('cron routes', () => {
     expect(igdb.status).toBe(200)
     await expect(oc.json()).resolves.toEqual({ synced: 1 })
     await expect(igdb.json()).resolves.toEqual({ refreshed: 1 })
+  })
+
+  it('runs fetch-news when authorized', async () => {
+    const res = await fetchNews(request(`Bearer ${CRON_SECRET}`))
+    expect(res.status).toBe(200)
+    await expect(res.json()).resolves.toEqual({ fetched: 12, sources: 6 })
   })
 })

@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
+import { formatDistanceToNow } from 'date-fns'
 import { createCallerFactory } from '@gamertakes/api/trpc'
 import { appRouter } from '@gamertakes/api'
 import { auth } from '@/lib/auth'
@@ -41,6 +42,8 @@ export default async function GamePage({ params }: PageProps) {
   const userEntry = session?.user?.id
     ? await caller.library.getEntry({ gameId: gameData.id, userId: session.user.id })
     : null
+
+  const newsArticles = await caller.news.getForGame({ gameId: gameData.id, limit: 4 })
 
   return (
     <main className="max-w-5xl mx-auto px-4 py-8">
@@ -101,6 +104,37 @@ export default async function GamePage({ params }: PageProps) {
           )}
 
           <ReviewsList gameId={gameData.id} session={session} />
+
+          {newsArticles.length > 0 && (
+            <div style={{ marginTop: 24 }}>
+              <h2 style={{ fontSize: 15, fontWeight: 500, marginBottom: 12 }}>In the news</h2>
+              {newsArticles.map((article) => (
+                <a
+                  key={article.id}
+                  href={article.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'flex',
+                    gap: 10,
+                    padding: '10px 0',
+                    borderBottom: '1px solid rgba(0,0,0,.08)',
+                    textDecoration: 'none',
+                  }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 12, color: '#f97316', marginBottom: 3 }}>{article.source}</div>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: '#1c1917', lineHeight: 1.4 }}>
+                      {article.title}
+                    </div>
+                    <div style={{ fontSize: 11, color: '#a8a29e', marginTop: 3 }}>
+                      {formatDistanceToNow(new Date(article.publishedAt))} ago
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </main>

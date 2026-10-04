@@ -28,6 +28,9 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-2">
+          <Link href="/news" className="text-sm font-medium text-gray-600 hover:text-gray-900 px-2">
+            News
+          </Link>
           {session ? (
             <>
               <Link href="/dashboard">

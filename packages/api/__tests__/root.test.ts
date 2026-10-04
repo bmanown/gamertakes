@@ -9,6 +9,7 @@ describe('appRouter', () => {
       'integrations',
       'library',
       'lists',
+      'news',
       'reviews',
       'social',
       'users',

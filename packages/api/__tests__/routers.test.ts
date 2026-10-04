@@ -38,6 +38,9 @@ const { mockDb } = vi.hoisted(() => ({
       findMany: vi.fn(),
       update: vi.fn(),
     },
+    newsArticle: {
+      findMany: vi.fn(),
+    },
     follow: {
       upsert: vi.fn(),
       deleteMany: vi.fn(),
@@ -54,6 +57,7 @@ import { listsRouter } from '../routers/lists'
 import { usersRouter } from '../routers/users'
 import { socialRouter } from '../routers/social'
 import { activityRouter } from '../routers/activity'
+import { newsRouter } from '../routers/news'
 
 const session = { user: { id: 'user1', username: 'testuser' }, expires: '' }
 
@@ -154,5 +158,27 @@ describe('activity.getUserActivity', () => {
     const result = await caller.getUserActivity({ userId: 'user1' })
     expect(result.activities).toEqual([{ id: 'a1' }])
     expect(result.nextCursor).toBeUndefined()
+  })
+})
+
+describe('news.getLatest', () => {
+  it('returns a cursor page of articles', async () => {
+    mockDb.newsArticle.findMany.mockResolvedValue([{ id: 'n1', title: 'Elden Ring DLC announced' }])
+    const caller = createCallerFactory(newsRouter)({ session: null, db: mockDb as never })
+    const result = await caller.getLatest({ limit: 20 })
+    expect(result.articles).toEqual([{ id: 'n1', title: 'Elden Ring DLC announced' }])
+    expect(result.nextCursor).toBeUndefined()
+  })
+})
+
+describe('news.getForGame', () => {
+  it('returns articles matched to a game', async () => {
+    mockDb.newsArticle.findMany.mockResolvedValue([{ id: 'n1', gameId: 'game1' }])
+    const caller = createCallerFactory(newsRouter)({ session: null, db: mockDb as never })
+    const result = await caller.getForGame({ gameId: 'game1', limit: 4 })
+    expect(result).toEqual([{ id: 'n1', gameId: 'game1' }])
+    expect(mockDb.newsArticle.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { gameId: 'game1' }, take: 4 }),
+    )
   })
 })

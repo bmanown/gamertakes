@@ -112,6 +112,7 @@ model Game {
   reviews             Review[]
   listItems           ListItem[]
   activities          Activity[]
+  newsArticles        NewsArticle[]
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 }
@@ -203,4 +204,18 @@ model Activity {
   user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   game      Game?        @relation(fields: [gameId], references: [id])
   list      List?        @relation(fields: [listId], references: [id])
+}
+
+model NewsArticle {
+  id          String   @id @default(cuid())
+  title       String
+  url         String   @unique
+  source      String
+  sourceUrl   String
+  description String?  @db.Text
+  imageUrl    String?
+  publishedAt DateTime
+  fetchedAt   DateTime @default(now())
+  gameId      String?
+  game        Game?    @relation(fields: [gameId], references: [id])
 }
