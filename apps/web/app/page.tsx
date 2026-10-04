@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/Button'
+import { GameComponentsPreview } from '@/components/game/GameComponentsPreview'
 
 export default function HomePage() {
   return (
@@ -13,6 +14,7 @@ export default function HomePage() {
       <div>
         <Button>Browse games</Button>
       </div>
+      <GameComponentsPreview />
     </main>
   )
 }
