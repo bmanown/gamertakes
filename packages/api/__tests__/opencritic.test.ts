@@ -1,16 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { mockDb } = vi.hoisted(() => ({
+const { mockDb, fetchIGDBGame } = vi.hoisted(() => ({
   mockDb: {
     game: {
       update: vi.fn(),
+      findUnique: vi.fn(),
     },
   },
+  fetchIGDBGame: vi.fn(),
 }))
 
 vi.mock('@gamertakes/db', () => ({ db: mockDb }))
+vi.mock('../lib/igdb', () => ({ fetchIGDBGame }))
 
-import { matchAndSyncOpenCritic } from '../lib/opencritic'
+import { fillCriticScore, matchAndSyncOpenCritic } from '../lib/opencritic'
 
 const game = {
   id: 'game1',
@@ -21,6 +24,8 @@ const game = {
 describe('matchAndSyncOpenCritic', () => {
   beforeEach(() => {
     mockDb.game.update.mockReset()
+    mockDb.game.findUnique.mockReset()
+    fetchIGDBGame.mockReset()
   })
 
   it('does not update when no OpenCritic title matches', async () => {
@@ -52,6 +57,24 @@ describe('matchAndSyncOpenCritic', () => {
         openCriticPercent: 98,
         openCriticTier: 'Mighty',
       }),
+    })
+  })
+})
+
+describe('fillCriticScore', () => {
+  it('uses IGDB aggregated rating when OpenCritic has no match', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [],
+    })
+    mockDb.game.findUnique.mockResolvedValue({ id: 'game1', igdbId: 1942, openCriticScore: null })
+    fetchIGDBGame.mockResolvedValue({ aggregated_rating: 89.4 })
+
+    await fillCriticScore({ id: 'game1', title: 'Hades', igdbId: 1942, openCriticScore: null } as never)
+
+    expect(mockDb.game.update).toHaveBeenCalledWith({
+      where: { id: 'game1' },
+      data: expect.objectContaining({ openCriticScore: 89 }),
     })
   })
 })

@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { createTRPCRouter, publicProcedure } from '../trpc'
 import { searchIGDB, upsertGameFromIGDB } from '../lib/igdb'
+import { fillCriticScore } from '../lib/opencritic'
 import { TRPCError } from '@trpc/server'
 
 export const gamesRouter = createTRPCRouter({
@@ -44,6 +45,11 @@ export const gamesRouter = createTRPCRouter({
         const match = results.find((g) => g.slug === input.slug)
         if (!match) throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' })
         game = await upsertGameFromIGDB(match)
+      }
+
+      if (!game.openCriticLastSync) {
+        await fillCriticScore(game)
+        game = (await ctx.db.game.findUnique({ where: { id: game.id } })) ?? game
       }
 
       const [communityRating, totalRatings] = await Promise.all([

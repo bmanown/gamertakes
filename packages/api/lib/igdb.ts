@@ -47,6 +47,7 @@ export interface IGDBGame {
   involved_companies?: { company: { name: string }; developer: boolean; publisher: boolean }[]
   similar_games?: number[]
   screenshots?: { url: string }[]
+  aggregated_rating?: number
 }
 
 export async function searchIGDB(
@@ -62,14 +63,14 @@ export async function searchIGDB(
 
   return igdbRequest<IGDBGame[]>(
     'games',
-    `search "${query}"; fields id,name,slug,summary,cover.url,first_release_date,platforms.name,genres.name,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,similar_games,screenshots.url; where ${where}; limit 20;`
+    `search "${query}"; fields id,name,slug,summary,cover.url,first_release_date,platforms.name,genres.name,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,similar_games,screenshots.url,aggregated_rating; where ${where}; limit 20;`
   )
 }
 
 export async function fetchIGDBGame(igdbId: number): Promise<IGDBGame> {
   const results = await igdbRequest<IGDBGame[]>(
     'games',
-    `fields id,name,slug,summary,cover.url,first_release_date,platforms.name,genres.name,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,similar_games,screenshots.url; where id = ${igdbId};`
+    `fields id,name,slug,summary,cover.url,first_release_date,platforms.name,genres.name,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,similar_games,screenshots.url,aggregated_rating; where id = ${igdbId};`
   )
   if (!results.length) throw new Error(`IGDB game ${igdbId} not found`)
   return results[0]
