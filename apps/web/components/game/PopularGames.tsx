@@ -26,7 +26,7 @@ export function PopularGames() {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {popular?.map((game) => (
-            <GameCard key={game.id} game={game} />
+            <GameCard key={game.id} game={game as never} />
           ))}
         </div>
       )}
