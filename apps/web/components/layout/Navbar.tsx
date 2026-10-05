@@ -1,11 +1,15 @@
 'use client'
 import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { Button } from '@/components/ui/Button'
 import { BookOpenIcon, LayoutDashboardIcon, UserIcon } from 'lucide-react'
+import { browseGamesHref } from '@/lib/catalog-url'
 
 export function Navbar() {
   const { data: session } = useSession()
+  const router = useRouter()
+  const pathname = usePathname()
 
   return (
     <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-sm">
@@ -20,9 +24,10 @@ export function Navbar() {
             placeholder="Search games..."
             className="w-full rounded-full border border-gray-200 px-4 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                window.location.href = `/games?q=${encodeURIComponent((e.target as HTMLInputElement).value)}`
-              }
+              if (e.key !== 'Enter') return
+              const href = browseGamesHref((e.target as HTMLInputElement).value)
+              if (pathname === '/games') router.replace(href)
+              else router.push(href)
             }}
           />
         </div>

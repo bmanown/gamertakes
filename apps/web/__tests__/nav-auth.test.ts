@@ -4,6 +4,11 @@ import { renderToStaticMarkup } from 'react-dom/server'
 
 const sessionState = vi.hoisted(() => ({ session: null as { user: { id: string; username: string } } | null }))
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
+  usePathname: () => '/',
+}))
+
 vi.mock('next/link', () => ({
   default: ({ href, children, ...props }: { href: string; children: React.ReactNode }) =>
     createElement('a', { href, ...props }, children),

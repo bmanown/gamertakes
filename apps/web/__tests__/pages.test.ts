@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { Game, GameEntry } from '@gamertakes/db'
+import { browseGamesHref, popularHref } from '../lib/catalog-url'
 
 const { getPopular, searchQuery, getLibrary } = vi.hoisted(() => ({
   getPopular: vi.fn(),
@@ -21,6 +22,8 @@ vi.mock('next/link', () => ({
 
 vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
+  usePathname: () => '/',
 }))
 
 vi.mock('@/lib/trpc', () => ({
@@ -79,6 +82,16 @@ describe('LandingPage', () => {
     expect(html).toContain('All games')
     expect(html).toContain('/auth/signup')
     expect(html).toContain('/games')
+  })
+})
+
+describe('catalog urls', () => {
+  it('keeps browse search and unofficial filter in the address bar', () => {
+    expect(browseGamesHref('zelda')).toBe('/games?q=zelda')
+    expect(browseGamesHref('zelda', false)).toBe('/games?q=zelda&official=0')
+    expect(browseGamesHref('', true)).toBe('/games')
+    expect(popularHref(true)).toBe('/')
+    expect(popularHref(false)).toBe('/?official=0')
   })
 })
 

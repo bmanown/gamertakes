@@ -1,16 +1,30 @@
 'use client'
-import { Suspense, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { Suspense, useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { GameCard } from '@/components/game/GameCard'
 import { OfficialFilterChips } from '@/components/game/OfficialFilterChips'
+import { browseGamesHref } from '@/lib/catalog-url'
 
 function BrowsePageInner() {
+  const router = useRouter()
   const searchParams = useSearchParams()
-  const initialQuery = searchParams.get('q') ?? ''
-  const [query, setQuery] = useState(initialQuery)
-  const [debouncedQuery, setDebouncedQuery] = useState(initialQuery)
-  const [officialOnly, setOfficialOnly] = useState(true)
+  const urlQuery = searchParams.get('q') ?? ''
+  const officialOnly = searchParams.get('official') !== '0'
+  const [query, setQuery] = useState(urlQuery)
+  const [debouncedQuery, setDebouncedQuery] = useState(urlQuery)
+
+  useEffect(() => {
+    if (urlQuery === debouncedQuery) return
+    setQuery(urlQuery)
+    setDebouncedQuery(urlQuery)
+  }, [urlQuery, debouncedQuery])
+
+  useEffect(() => {
+    const href = browseGamesHref(debouncedQuery, officialOnly)
+    const current = browseGamesHref(urlQuery, officialOnly)
+    if (href !== current) router.replace(href, { scroll: false })
+  }, [debouncedQuery, officialOnly, router, urlQuery])
 
   const { data, isLoading } = trpc.games.search.useQuery(
     { query: debouncedQuery || 'zelda', official: officialOnly },
@@ -34,7 +48,10 @@ function BrowsePageInner() {
       />
 
       <div className="mb-8">
-        <OfficialFilterChips officialOnly={officialOnly} onChange={setOfficialOnly} />
+        <OfficialFilterChips
+          officialOnly={officialOnly}
+          onChange={(next) => router.replace(browseGamesHref(debouncedQuery, next), { scroll: false })}
+        />
       </div>
 
       {isLoading ? (
