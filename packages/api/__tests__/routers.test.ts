@@ -37,6 +37,7 @@ const { mockDb } = vi.hoisted(() => ({
       findUnique: vi.fn(),
       findMany: vi.fn(),
       update: vi.fn(),
+      create: vi.fn(),
     },
     newsArticle: {
       findMany: vi.fn(),
@@ -118,6 +119,29 @@ describe('lists', () => {
     expect(mockDb.activity.create).toHaveBeenCalledWith({
       data: { userId: 'user1', type: 'CREATED_LIST', listId: 'list1' },
     })
+  })
+})
+
+describe('users.signUp', () => {
+  it('creates a user for a new email', async () => {
+    mockDb.user.findUnique.mockResolvedValue(null)
+    mockDb.user.create.mockResolvedValue({ id: 'u1', email: 'brian@example.com', username: 'brian_abc123' })
+    const caller = createCallerFactory(usersRouter)({ session: null, db: mockDb as never })
+    const result = await caller.signUp({ email: 'Brian@example.com', password: 'password1' })
+    expect(result.email).toBe('brian@example.com')
+    expect(mockDb.user.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ email: 'brian@example.com', passwordHash: expect.any(String) }),
+      }),
+    )
+  })
+
+  it('rejects an email that is already registered', async () => {
+    mockDb.user.findUnique.mockResolvedValue({ id: 'u1', email: 'brian@example.com' })
+    const caller = createCallerFactory(usersRouter)({ session: null, db: mockDb as never })
+    await expect(
+      caller.signUp({ email: 'brian@example.com', password: 'password1' }),
+    ).rejects.toMatchObject({ code: 'CONFLICT' })
   })
 })
 

@@ -9,6 +9,7 @@ vi.mock('@gamertakes/db', () => ({
 }))
 
 import { db } from '@gamertakes/db'
+import { hashPassword } from '@gamertakes/api/password'
 import { authorizeCredentials, jwtCallback, sessionCallback } from '../lib/auth-utils'
 
 const findUnique = vi.mocked(db.user.findUnique)
@@ -32,11 +33,24 @@ describe('authorizeCredentials', () => {
     ).resolves.toBeNull()
   })
 
-  it('returns the user when email matches', async () => {
+  it('returns null when the password does not match', async () => {
+    findUnique.mockResolvedValue({
+      id: 'user-1',
+      email: 'brian@example.com',
+      username: 'brian',
+      passwordHash: await hashPassword('password1'),
+    } as Awaited<ReturnType<typeof findUnique>>)
+    await expect(
+      authorizeCredentials({ email: 'brian@example.com', password: 'wrongpass' }),
+    ).resolves.toBeNull()
+  })
+
+  it('returns the user when email and password match', async () => {
     const user = {
       id: 'user-1',
       email: 'brian@example.com',
       username: 'brian',
+      passwordHash: await hashPassword('password1'),
     }
     findUnique.mockResolvedValue(user as Awaited<ReturnType<typeof findUnique>>)
     await expect(

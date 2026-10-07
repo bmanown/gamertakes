@@ -7,6 +7,7 @@ const sessionState = vi.hoisted(() => ({ session: null as { user: { id: string; 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
   usePathname: () => '/',
+  useSearchParams: () => new URLSearchParams(),
 }))
 
 vi.mock('next/link', () => ({
@@ -24,6 +25,7 @@ vi.mock('@/lib/trpc', () => ({
   trpc: {
     users: {
       updateProfile: { useMutation: () => ({ mutate: vi.fn(), isPending: false }) },
+      signUp: { useMutation: () => ({ mutateAsync: vi.fn(), isPending: false }) },
     },
   },
 }))
@@ -61,6 +63,7 @@ describe('SignUpPage', () => {
     expect(html).toContain('Create your account')
     expect(html).toContain('Password')
     expect(html).toContain('Show password')
+    expect(html).toContain('Create account')
   })
 })
 

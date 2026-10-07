@@ -1,4 +1,5 @@
 import { db } from '@gamertakes/db'
+import { verifyPassword } from '@gamertakes/api/password'
 import { z } from 'zod'
 
 const credentialsSchema = z.object({
@@ -11,10 +12,11 @@ export async function authorizeCredentials(credentials: unknown) {
   if (!parsed.success) return null
 
   const user = await db.user.findUnique({
-    where: { email: parsed.data.email },
+    where: { email: parsed.data.email.trim().toLowerCase() },
   })
-  if (!user) return null
-  // Password check — bcrypt added in Task 5
+  if (!user?.passwordHash) return null
+  const matches = await verifyPassword(parsed.data.password, user.passwordHash)
+  if (!matches) return null
   return user
 }
 

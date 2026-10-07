@@ -15,7 +15,8 @@
   },
   "exports": {
     ".": "./root.ts",
-    "./trpc": "./trpc.ts"
+    "./trpc": "./trpc.ts",
+    "./password": "./lib/password.ts"
   },
   "devDependencies": {
     "vitest": "1.6.0"

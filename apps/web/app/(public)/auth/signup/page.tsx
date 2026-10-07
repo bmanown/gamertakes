@@ -4,10 +4,37 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { PasswordField } from '@/components/ui/PasswordField'
+import { trpc } from '@/lib/trpc'
 
 export default function SignUpPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const signUp = trpc.users.signUp.useMutation()
+
+  async function createAccount() {
+    setError(null)
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters.')
+      return
+    }
+    try {
+      await signUp.mutateAsync({ email, password })
+      const result = await signIn('credentials', {
+        email,
+        password,
+        callbackUrl: '/auth/username',
+        redirect: false,
+      })
+      if (result?.error) {
+        setError('The account was created, but sign-in failed. Try signing in.')
+        return
+      }
+      window.location.href = result?.url ?? '/auth/username'
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not create the account.')
+    }
+  }
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
@@ -26,14 +53,21 @@ export default function SignUpPage() {
           <div className="relative text-center text-xs text-gray-400 bg-white px-2">or</div>
         </div>
 
-        <div className="space-y-3">
+        <form
+          className="space-y-3"
+          onSubmit={(event) => {
+            event.preventDefault()
+            void createAccount()
+          }}
+        >
           <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" required />
           <PasswordField value={password} onChange={setPassword} autoComplete="new-password" />
-          <Button className="w-full" onClick={() => signIn('credentials', { email, password, callbackUrl: '/dashboard' })}>
-            Create account
+          {error && <p className="text-sm text-red-600">{error}</p>}
+          <Button className="w-full" type="submit" disabled={signUp.isPending}>
+            {signUp.isPending ? 'Creating account…' : 'Create account'}
           </Button>
-        </div>
+        </form>
 
         <p className="text-center text-sm text-gray-500">
           Already have an account?{' '}

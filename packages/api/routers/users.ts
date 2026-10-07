@@ -1,8 +1,35 @@
 import { z } from 'zod'
 import { createTRPCRouter, protectedProcedure, publicProcedure } from '../trpc'
 import { TRPCError } from '@trpc/server'
+import { hashPassword, placeholderUsername } from '../lib/password'
 
 export const usersRouter = createTRPCRouter({
+  signUp: publicProcedure
+    .input(z.object({
+      email: z.string().email(),
+      password: z.string().min(8).max(72),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const email = input.email.trim().toLowerCase()
+      const existing = await ctx.db.user.findUnique({ where: { email } })
+      if (existing) {
+        throw new TRPCError({ code: 'CONFLICT', message: 'An account with this email already exists' })
+      }
+
+      const passwordHash = await hashPassword(input.password)
+      let username = placeholderUsername(email)
+      for (let attempt = 0; attempt < 5; attempt += 1) {
+        const taken = await ctx.db.user.findUnique({ where: { username } })
+        if (!taken) break
+        username = placeholderUsername(email)
+      }
+
+      return ctx.db.user.create({
+        data: { email, username, passwordHash },
+        select: { id: true, email: true, username: true },
+      })
+    }),
+
   getProfile: publicProcedure
     .input(z.object({ username: z.string() }))
     .query(async ({ input, ctx }) => {
