@@ -12,10 +12,22 @@ function fromHex(hex: string) {
   return bytes
 }
 
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  const buffer = new ArrayBuffer(bytes.byteLength)
+  new Uint8Array(buffer).set(bytes)
+  return buffer
+}
+
 async function deriveKey(password: string, salt: Uint8Array) {
-  const key = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits'])
+  const key = await crypto.subtle.importKey(
+    'raw',
+    toArrayBuffer(encoder.encode(password)),
+    'PBKDF2',
+    false,
+    ['deriveBits'],
+  )
   const bits = await crypto.subtle.deriveBits(
-    { name: 'PBKDF2', salt, iterations: 100_000, hash: 'SHA-256' },
+    { name: 'PBKDF2', salt: toArrayBuffer(salt), iterations: 100_000, hash: 'SHA-256' },
     key,
     256,
   )
