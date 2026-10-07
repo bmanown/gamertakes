@@ -76,4 +76,13 @@ describe('session callbacks', () => {
     expect(session.user.id).toBe('user-1')
     expect(session.user.username).toBe('brian')
   })
+
+  it('writes an updated username onto the JWT', () => {
+    const token = jwtCallback({
+      token: { id: 'user-1', username: 'bmanown_9x4in9' },
+      trigger: 'update',
+      session: { username: 'brian' },
+    })
+    expect(token.username).toBe('brian')
+  })
 })

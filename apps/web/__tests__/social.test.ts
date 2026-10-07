@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 
-const { getProfile, getUserActivity, getFeed, getLibrary, auth, followMutate, unfollowMutate } = vi.hoisted(() => ({
+const { getProfile, getUserActivity, getFeed, getLibrary, auth, followMutate, unfollowMutate, findUnique } = vi.hoisted(() => ({
   getProfile: vi.fn(),
   getUserActivity: vi.fn(),
   getFeed: vi.fn(),
@@ -10,6 +10,7 @@ const { getProfile, getUserActivity, getFeed, getLibrary, auth, followMutate, un
   auth: vi.fn(),
   followMutate: vi.fn(),
   unfollowMutate: vi.fn(),
+  findUnique: vi.fn(),
 }))
 
 vi.mock('next/link', () => ({
@@ -29,7 +30,16 @@ vi.mock('@gamertakes/api/trpc', () => ({
 }))
 
 vi.mock('@gamertakes/api', () => ({ appRouter: {} }))
-vi.mock('@gamertakes/db', () => ({ db: { user: { findUnique: vi.fn() } } }))
+vi.mock('next/navigation', () => ({
+  notFound: () => {
+    throw new Error('NEXT_NOT_FOUND')
+  },
+  redirect: (href: string) => {
+    throw new Error(`REDIRECT:${href}`)
+  },
+}))
+
+vi.mock('@gamertakes/db', () => ({ db: { user: { findUnique: findUnique } } }))
 vi.mock('@/lib/auth', () => ({ auth }))
 
 vi.mock('next-auth/react', () => ({
@@ -135,5 +145,26 @@ describe('DashboardPage', () => {
     expect(html).toContain('Follow some users to see their activity here.')
     expect(html).toContain('Currently Playing')
     expect(html).toContain('Nothing in progress. Start a game!')
+  })
+})
+
+describe('UserProfilePage stale username', () => {
+  it('redirects to the current handle when the session username is stale', async () => {
+    auth.mockResolvedValue({ user: { id: 'u1', username: 'bmanown_9x4in9' } })
+    getProfile.mockRejectedValue(Object.assign(new Error('NOT_FOUND'), { code: 'NOT_FOUND' }))
+    findUnique.mockResolvedValue({ username: 'brian' })
+    const { default: UserProfilePage } = await import('../app/(public)/users/[username]/page')
+    await expect(UserProfilePage({ params: { username: 'bmanown_9x4in9' } })).rejects.toThrow(
+      'REDIRECT:/users/brian',
+    )
+  })
+})
+
+describe('MyProfilePage', () => {
+  it('redirects a signed-in user to their current profile URL', async () => {
+    auth.mockResolvedValue({ user: { id: 'u1' } })
+    findUnique.mockResolvedValue({ username: 'brian' })
+    const { default: MyProfilePage } = await import('../app/(auth)/profile/page')
+    await expect(MyProfilePage()).rejects.toThrow('REDIRECT:/users/brian')
   })
 })

@@ -23,13 +23,20 @@ export async function authorizeCredentials(credentials: unknown) {
 export function jwtCallback({
   token,
   user,
+  trigger,
+  session,
 }: {
   token: { id?: string; username?: string; [key: string]: unknown }
   user?: { id: string; username?: string | null }
+  trigger?: 'signIn' | 'signUp' | 'update'
+  session?: { username?: string }
 }) {
   if (user) {
     token.id = user.id
     token.username = user.username ?? undefined
+  }
+  if (trigger === 'update' && session?.username) {
+    token.username = session.username
   }
   return token
 }

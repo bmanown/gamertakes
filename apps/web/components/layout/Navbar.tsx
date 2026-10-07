@@ -44,7 +44,7 @@ export function Navbar() {
               <Link href="/library">
                 <Button variant="ghost" size="sm"><BookOpenIcon className="h-4 w-4" /></Button>
               </Link>
-              <Link href={`/users/${session.user.username}`}>
+              <Link href="/profile">
                 <Button variant="ghost" size="sm"><UserIcon className="h-4 w-4" /></Button>
               </Link>
               <Button variant="secondary" size="sm" onClick={() => signOut()}>Sign Out</Button>

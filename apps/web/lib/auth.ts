@@ -22,12 +22,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       return jwtCallback({
         token,
         user: user
           ? { id: user.id!, username: (user as { username?: string | null }).username }
           : undefined,
+        trigger,
+        session,
       })
     },
     async session({ session, token }) {

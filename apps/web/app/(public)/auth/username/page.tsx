@@ -1,13 +1,16 @@
 'use client'
 import { useState } from 'react'
+import { useSession } from 'next-auth/react'
 import { trpc } from '@/lib/trpc'
 import { Button } from '@/components/ui/Button'
 
 export default function UsernamePage() {
   const [username, setUsername] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const { update: updateSession } = useSession()
   const update = trpc.users.updateProfile.useMutation({
-    onSuccess: () => {
+    onSuccess: async (user) => {
+      await updateSession({ username: user.username })
       window.location.href = '/dashboard'
     },
     onError: (err) => setError(err.message),

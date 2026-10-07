@@ -1,5 +1,5 @@
 import { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { createCallerFactory } from '@gamertakes/api/trpc'
 import { appRouter } from '@gamertakes/api'
 import { auth } from '@/lib/auth'
@@ -24,6 +24,15 @@ export default async function UserProfilePage({ params }: PageProps) {
   try {
     profile = await caller.users.getProfile({ username: params.username })
   } catch {
+    if (session?.user?.id && session.user.username === params.username) {
+      const me = await db.user.findUnique({
+        where: { id: session.user.id },
+        select: { username: true },
+      })
+      if (me && me.username !== params.username) {
+        redirect(`/users/${me.username}`)
+      }
+    }
     notFound()
   }
 

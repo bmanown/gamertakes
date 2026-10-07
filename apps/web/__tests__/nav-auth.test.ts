@@ -16,7 +16,7 @@ vi.mock('next/link', () => ({
 }))
 
 vi.mock('next-auth/react', () => ({
-  useSession: () => ({ data: sessionState.session }),
+  useSession: () => ({ data: sessionState.session, update: vi.fn() }),
   signIn: vi.fn(),
   signOut: vi.fn(),
 }))
@@ -51,7 +51,7 @@ describe('Navbar', () => {
     const html = renderToStaticMarkup(createElement(Navbar))
     expect(html).toContain('/dashboard')
     expect(html).toContain('/library')
-    expect(html).toContain('/users/brian')
+    expect(html).toContain('/profile')
     expect(html).toContain('Sign Out')
   })
 })
