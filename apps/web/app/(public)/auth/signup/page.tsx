@@ -3,6 +3,7 @@ import { signIn } from 'next-auth/react'
 import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
+import { PasswordField } from '@/components/ui/PasswordField'
 
 export default function SignUpPage() {
   const [email, setEmail] = useState('')
@@ -28,8 +29,7 @@ export default function SignUpPage() {
         <div className="space-y-3">
           <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)}
             className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
-          <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
+          <PasswordField value={password} onChange={setPassword} autoComplete="new-password" />
           <Button className="w-full" onClick={() => signIn('credentials', { email, password, callbackUrl: '/dashboard' })}>
             Create account
           </Button>

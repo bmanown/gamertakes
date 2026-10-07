@@ -54,6 +54,16 @@ describe('Navbar', () => {
   })
 })
 
+describe('SignUpPage', () => {
+  it('renders a password field with a show toggle', async () => {
+    const { default: SignUpPage } = await import('../app/(public)/auth/signup/page')
+    const html = renderToStaticMarkup(createElement(SignUpPage))
+    expect(html).toContain('Create your account')
+    expect(html).toContain('Password')
+    expect(html).toContain('Show password')
+  })
+})
+
 describe('SignInPage', () => {
   it('renders Google and credentials sign-in', async () => {
     const { default: SignInPage } = await import('../app/(public)/auth/signin/page')

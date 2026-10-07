@@ -3,6 +3,7 @@ import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { CriticScoreBadge } from '../components/ui/CriticScoreBadge'
 import { Button } from '../components/ui/Button'
+import { PasswordField } from '../components/ui/PasswordField'
 
 describe('CriticScoreBadge', () => {
   it('renders a placeholder when there is no score', () => {
@@ -20,6 +21,16 @@ describe('CriticScoreBadge', () => {
     const html = renderToStaticMarkup(createElement(CriticScoreBadge, { score: 93, tier: 'Mighty' }))
     expect(html).toContain('Mighty')
     expect(html).toContain('OpenCritic')
+  })
+})
+
+describe('PasswordField', () => {
+  it('starts hidden and offers a show-password control', () => {
+    const html = renderToStaticMarkup(
+      createElement(PasswordField, { value: 'secret', onChange: () => undefined }),
+    )
+    expect(html).toContain('type="password"')
+    expect(html).toContain('Show password')
   })
 })
 
