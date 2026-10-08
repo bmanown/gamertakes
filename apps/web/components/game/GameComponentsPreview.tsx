@@ -28,6 +28,8 @@ const sampleGame = {
   similarGames: [],
   screenshots: [],
   popularityScore: 12,
+  aggregatedRating: 93,
+  aggregatedRatingCount: 44,
   createdAt: new Date(),
   updatedAt: new Date(),
   communityRating: 4.6,
