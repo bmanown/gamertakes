@@ -1,5 +1,7 @@
 import { db, type Game } from '@gamertakes/db'
 import { isOfficialFromIGDB, officialCategoryId } from './official'
+import { IGDB_GAME_FIELDS, catalogQuery } from './igdb-catalog'
+import { runInBackground } from './background'
 
 const IGDB_BASE = 'https://api.igdb.com/v4'
 
@@ -49,6 +51,10 @@ export interface IGDBGame {
   similar_games?: number[]
   screenshots?: { url: string }[]
   aggregated_rating?: number
+  aggregated_rating_count?: number
+  total_rating?: number
+  total_rating_count?: number
+  follows?: number
   category?: number
   game_type?: number | { id?: number; type?: string }
 }
@@ -69,64 +75,92 @@ export async function searchIGDB(
 
   return igdbRequest<IGDBGame[]>(
     'games',
-    `search "${query}"; fields id,name,slug,summary,cover.url,first_release_date,platforms.name,genres.name,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,similar_games,screenshots.url,aggregated_rating,category,game_type.type; where ${where}; limit 20;`
+    `search "${query}"; fields ${IGDB_GAME_FIELDS}; where ${where}; limit 20;`
   )
 }
 
 export async function fetchIGDBGame(igdbId: number): Promise<IGDBGame> {
   const results = await igdbRequest<IGDBGame[]>(
     'games',
-    `fields id,name,slug,summary,cover.url,first_release_date,platforms.name,genres.name,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,similar_games,screenshots.url,aggregated_rating,category,game_type.type; where id = ${igdbId};`
+    `fields ${IGDB_GAME_FIELDS}; where id = ${igdbId};`
   )
   if (!results.length) throw new Error(`IGDB game ${igdbId} not found`)
   return results[0]
 }
 
-export async function upsertGameFromIGDB(igdbGame: IGDBGame): Promise<Game> {
-  const developer = igdbGame.involved_companies?.find((c) => c.developer)?.company.name
-  const publisher = igdbGame.involved_companies?.find((c) => c.publisher)?.company.name
+export function gameFromIGDB(igdbGame: IGDBGame): Game {
+  const developer = igdbGame.involved_companies?.find((c) => c.developer)?.company.name ?? null
+  const publisher = igdbGame.involved_companies?.find((c) => c.publisher)?.company.name ?? null
   const coverUrl = igdbGame.cover?.url
     ? `https:${igdbGame.cover.url.replace('t_thumb', 't_cover_big')}`
     : null
   const screenshots = (igdbGame.screenshots ?? []).map(
-    (s) => `https:${s.url.replace('t_thumb', 't_screenshot_big')}`
+    (s) => `https:${s.url.replace('t_thumb', 't_screenshot_big')}`,
   )
+  const now = new Date()
+  return {
+    id: `igdb-${igdbGame.id}`,
+    igdbId: igdbGame.id,
+    slug: igdbGame.slug,
+    title: igdbGame.name,
+    description: igdbGame.summary ?? null,
+    coverImage: coverUrl,
+    releaseDate: igdbGame.first_release_date
+      ? new Date(igdbGame.first_release_date * 1000)
+      : null,
+    platforms: igdbGame.platforms?.map((p) => p.name) ?? [],
+    genres: igdbGame.genres?.map((g) => g.name) ?? [],
+    developer,
+    publisher,
+    similarGames: igdbGame.similar_games ?? [],
+    screenshots,
+    igdbCategory: officialCategoryId(igdbGame),
+    isOfficial: isOfficialFromIGDB(igdbGame),
+    openCriticId: null,
+    openCriticScore: igdbGame.aggregated_rating != null ? Math.round(igdbGame.aggregated_rating) : null,
+    openCriticPercent: null,
+    openCriticTier: null,
+    openCriticLastSync: null,
+    igdbLastSync: now,
+    popularityScore: igdbGame.total_rating_count ?? igdbGame.aggregated_rating_count ?? igdbGame.follows ?? 0,
+    aggregatedRating: igdbGame.aggregated_rating ?? null,
+    aggregatedRatingCount: igdbGame.aggregated_rating_count ?? null,
+    createdAt: now,
+    updatedAt: now,
+  }
+}
+
+export function cacheIGDBGames(games: IGDBGame[]) {
+  runInBackground(Promise.all(games.map((game) => upsertGameFromIGDB(game))))
+}
+
+export async function fetchCatalogPage(opts: { offset: number; fromYear: number; toYear: number }) {
+  return igdbRequest<IGDBGame[]>('games', catalogQuery(opts))
+}
+
+export async function upsertGameFromIGDB(igdbGame: IGDBGame): Promise<Game> {
+  const mapped = gameFromIGDB(igdbGame)
+  const { id: _id, createdAt: _createdAt, updatedAt: _updatedAt, popularityScore, ...data } = mapped
 
   return db.game.upsert({
     where: { igdbId: igdbGame.id },
-    create: {
-      igdbId: igdbGame.id,
-      slug: igdbGame.slug,
-      title: igdbGame.name,
-      description: igdbGame.summary ?? null,
-      coverImage: coverUrl,
-      releaseDate: igdbGame.first_release_date
-        ? new Date(igdbGame.first_release_date * 1000)
-        : null,
-      platforms: igdbGame.platforms?.map((p) => p.name) ?? [],
-      genres: igdbGame.genres?.map((g) => g.name) ?? [],
-      developer: developer ?? null,
-      publisher: publisher ?? null,
-      similarGames: igdbGame.similar_games ?? [],
-      screenshots,
-      igdbCategory: officialCategoryId(igdbGame),
-      isOfficial: isOfficialFromIGDB(igdbGame),
-    },
+    create: { ...data, popularityScore },
     update: {
-      title: igdbGame.name,
-      description: igdbGame.summary ?? null,
-      coverImage: coverUrl,
-      releaseDate: igdbGame.first_release_date
-        ? new Date(igdbGame.first_release_date * 1000)
-        : null,
-      platforms: igdbGame.platforms?.map((p) => p.name) ?? [],
-      genres: igdbGame.genres?.map((g) => g.name) ?? [],
-      developer: developer ?? null,
-      publisher: publisher ?? null,
-      similarGames: igdbGame.similar_games ?? [],
-      screenshots,
-      igdbCategory: officialCategoryId(igdbGame),
-      isOfficial: isOfficialFromIGDB(igdbGame),
+      title: data.title,
+      description: data.description,
+      coverImage: data.coverImage,
+      releaseDate: data.releaseDate,
+      platforms: data.platforms,
+      genres: data.genres,
+      developer: data.developer,
+      publisher: data.publisher,
+      similarGames: data.similarGames,
+      screenshots: data.screenshots,
+      igdbCategory: data.igdbCategory,
+      isOfficial: data.isOfficial,
+      aggregatedRating: data.aggregatedRating,
+      aggregatedRatingCount: data.aggregatedRatingCount,
+      popularityScore,
       igdbLastSync: new Date(),
     },
   })

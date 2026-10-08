@@ -64,6 +64,8 @@ function game(overrides: Partial<Game> = {}): Game {
     igdbCategory: 0,
     isOfficial: true,
     popularityScore: 10,
+    aggregatedRating: null,
+    aggregatedRatingCount: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,

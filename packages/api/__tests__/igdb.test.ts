@@ -1,4 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+
+const { upsert } = vi.hoisted(() => ({
+  upsert: vi.fn(),
+}))
+
+vi.mock('@gamertakes/db', () => ({
+  db: { game: { upsert } },
+}))
+
 import { searchIGDB, upsertGameFromIGDB } from '../lib/igdb'
 
 describe('searchIGDB', () => {
@@ -45,5 +54,32 @@ describe('searchIGDB', () => {
     const body = String((global.fetch as ReturnType<typeof vi.fn>).mock.calls.at(-1)?.[1]?.body ?? '')
     expect(body).toContain('game_type.type = ("Main Game","Remake","Remaster")')
     expect(body).toContain('category = (0,8,9)')
+  })
+})
+
+describe('upsertGameFromIGDB', () => {
+  it('stores IGDB aggregated rating and follow-based popularity', async () => {
+    upsert.mockResolvedValue({ id: 'g1' })
+    await upsertGameFromIGDB({
+      id: 123,
+      name: 'Hades',
+      slug: 'hades',
+      aggregated_rating: 91.2,
+      aggregated_rating_count: 44,
+      total_rating_count: 1200,
+    })
+    expect(upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({
+          aggregatedRating: 91.2,
+          aggregatedRatingCount: 44,
+          popularityScore: 1200,
+        }),
+        update: expect.objectContaining({
+          aggregatedRating: 91.2,
+          aggregatedRatingCount: 44,
+        }),
+      }),
+    )
   })
 })

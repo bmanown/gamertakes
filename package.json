@@ -9,11 +9,13 @@
     "lint": "turbo lint",
     "db:push": "pnpm --filter @gamertakes/db db:push",
     "db:studio": "pnpm --filter @gamertakes/db db:studio",
-    "db:migrate": "pnpm --filter @gamertakes/db db:migrate"
+    "db:migrate": "pnpm --filter @gamertakes/db db:migrate",
+    "db:import-igdb": "tsx jobs/importIGDBCatalog.ts"
   },
   "devDependencies": {
     "turbo": "^2.0.0",
     "typescript": "^5.4.0",
+    "tsx": "^4.19.3",
     "prettier": "^3.2.0",
     "eslint": "^9.0.0"
   }

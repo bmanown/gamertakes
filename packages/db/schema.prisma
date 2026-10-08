@@ -112,6 +112,8 @@ model Game {
   similarGames        Int[]
   screenshots         String[]
   popularityScore     Float     @default(0)
+  aggregatedRating      Float?
+  aggregatedRatingCount Int?
   entries             GameEntry[]
   reviews             Review[]
   listItems           ListItem[]

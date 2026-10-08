@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { createTRPCRouter, publicProcedure } from '../trpc'
-import { searchIGDB, upsertGameFromIGDB } from '../lib/igdb'
+import { cacheIGDBGames, gameFromIGDB, searchIGDB, upsertGameFromIGDB } from '../lib/igdb'
 import { fillCriticScore } from '../lib/opencritic'
 import { officialGameWhere } from '../lib/official'
 import { TRPCError } from '@trpc/server'
@@ -35,8 +35,12 @@ export const gamesRouter = createTRPCRouter({
         year: input.year,
         official: input.official,
       })
-      const games = await Promise.all(igdbResults.map(upsertGameFromIGDB))
-      return games
+      cacheIGDBGames(igdbResults)
+      const existing = await ctx.db.game.findMany({
+        where: { igdbId: { in: igdbResults.map((game) => game.id) } },
+      })
+      const byIgdbId = new Map(existing.map((game) => [game.igdbId, game]))
+      return igdbResults.map((game) => byIgdbId.get(game.id) ?? gameFromIGDB(game))
     }),
 
   getBySlug: publicProcedure
