@@ -16,10 +16,15 @@ vi.mock('@/jobs/fetchNews', () => ({
   fetchAllNews: vi.fn(async () => ({ fetched: 12, sources: 6 })),
 }))
 
+vi.mock('@/jobs/fillReviewLinks', () => ({
+  fillReviewLinksBatch: vi.fn(async () => ({ selected: 95 })),
+}))
+
 import { GET as computePopular } from '../app/api/cron/compute-popular/route'
 import { GET as syncOpenCritic } from '../app/api/cron/sync-opencritic/route'
 import { GET as refreshIgdb } from '../app/api/cron/refresh-igdb/route'
 import { GET as fetchNews } from '../app/api/cron/fetch-news/route'
+import { GET as fillReviewLinks } from '../app/api/cron/fill-review-links/route'
 
 const CRON_SECRET = 'test-cron-secret'
 process.env.CRON_SECRET = CRON_SECRET
@@ -55,5 +60,11 @@ describe('cron routes', () => {
     const res = await fetchNews(request(`Bearer ${CRON_SECRET}`))
     expect(res.status).toBe(200)
     await expect(res.json()).resolves.toEqual({ fetched: 12, sources: 6 })
+  })
+
+  it('runs fill-review-links when authorized', async () => {
+    const res = await fillReviewLinks(request(`Bearer ${CRON_SECRET}`))
+    expect(res.status).toBe(200)
+    await expect(res.json()).resolves.toEqual({ selected: 95 })
   })
 })

@@ -3,6 +3,15 @@ import type { ReviewLink } from '@gamertakes/types'
 
 export const REVIEW_LINKS_DAILY_LIMIT = 95
 
+export function uncachedReviewLinksQuery() {
+  return {
+    where: { reviewLinksFetchedAt: null },
+    orderBy: { popularityScore: 'desc' as const },
+    take: REVIEW_LINKS_DAILY_LIMIT,
+    select: { id: true, title: true },
+  }
+}
+
 export function reviewLinkSource(url: string) {
   try {
     return new URL(url).hostname.replace(/^www\./, '')
