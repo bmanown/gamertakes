@@ -1,7 +1,7 @@
 'use client'
 import { trpc } from '@/lib/trpc'
 import { ActivityItem } from '@/components/social/ActivityItem'
-import { GameCard } from '@/components/game/GameCard'
+import { GameCard, type GameCardEntry, type GameCardGame } from '@/components/game/GameCard'
 import { useSession } from 'next-auth/react'
 
 type FeedActivity = {
@@ -22,7 +22,7 @@ export default function DashboardPage() {
     { userId: session?.user?.id ?? '', status: 'PLAYING' },
     { enabled: !!session?.user?.id }
   )
-  const playing = libraryQuery.data as Array<{ id: string; game: never; status: string }> | undefined
+  const playing = libraryQuery.data as Array<{ id: string; game: GameCardGame } & GameCardEntry> | undefined
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -57,7 +57,7 @@ export default function DashboardPage() {
           <h2 className="text-lg font-semibold mb-4">Currently Playing</h2>
           <div className="space-y-3">
             {playing?.slice(0, 5).map((entry) => (
-              <GameCard key={entry.id} game={entry.game as never} entry={entry as never} />
+              <GameCard key={entry.id} game={entry.game} entry={entry} />
             ))}
             {!playing?.length && (
               <p className="text-sm text-gray-400">Nothing in progress. Start a game!</p>

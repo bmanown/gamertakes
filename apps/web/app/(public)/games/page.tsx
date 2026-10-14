@@ -2,7 +2,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
-import { GameCard } from '@/components/game/GameCard'
+import { GameCard, type GameCardGame } from '@/components/game/GameCard'
 import { OfficialFilterChips } from '@/components/game/OfficialFilterChips'
 import { browseGamesHref } from '@/lib/catalog-url'
 
@@ -30,7 +30,7 @@ function BrowsePageInner() {
     { query: debouncedQuery || 'zelda', official: officialOnly },
     { enabled: true }
   )
-  const games = data as Array<{ id: string }> | undefined
+  const games = data as GameCardGame[] | undefined
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -62,7 +62,7 @@ function BrowsePageInner() {
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {games?.map((game) => <GameCard key={game.id} game={game as never} />)}
+          {games?.map((game) => <GameCard key={game.id} game={game} />)}
         </div>
       )}
     </div>

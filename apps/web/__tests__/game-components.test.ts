@@ -1,9 +1,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import type { Game, GameEntry } from '@gamertakes/db'
 import { PlaytimeDisplay } from '../components/game/PlaytimeDisplay'
-import { GameCard } from '../components/game/GameCard'
+import { GameCard, type GameCardGame } from '../components/game/GameCard'
 
 vi.mock('next/image', () => ({
   default: ({ src, alt }: { src: string; alt: string }) =>
@@ -15,36 +14,14 @@ vi.mock('next/link', () => ({
     createElement('a', { href, ...props }, children),
 }))
 
-function game(overrides: Partial<Game> = {}): Game {
+function game(overrides: Partial<GameCardGame> = {}): GameCardGame {
   return {
     id: 'game1',
-    igdbId: 1,
     slug: 'hades',
     title: 'Hades',
-    description: null,
     coverImage: null,
-    releaseDate: null,
     platforms: ['PC', 'PlayStation 5', 'Switch', 'Xbox'],
-    genres: ['Roguelike'],
-    developer: 'Supergiant',
-    publisher: 'Supergiant',
-    openCriticId: null,
-    openCriticScore: null,
-    openCriticPercent: null,
-    openCriticTier: null,
-    openCriticLastSync: null,
-    igdbLastSync: new Date(),
-    similarGames: [],
-    screenshots: [],
-    igdbCategory: 0,
     isOfficial: true,
-    popularityScore: 0,
-    aggregatedRating: null,
-    aggregatedRatingCount: null,
-    reviewLinks: [],
-    reviewLinksFetchedAt: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
     ...overrides,
   }
 }
@@ -80,7 +57,7 @@ describe('GameCard', () => {
   })
 
   it('shows a Playing badge when the user has an entry', () => {
-    const entry = { status: 'PLAYING' } as GameEntry
+    const entry = { status: 'PLAYING' }
     const html = renderToStaticMarkup(createElement(GameCard, { game: game(), entry }))
     expect(html).toContain('Playing')
   })

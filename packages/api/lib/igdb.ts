@@ -142,7 +142,15 @@ export async function fetchCatalogPage(opts: { offset: number; fromYear: number;
 
 export async function upsertGameFromIGDB(igdbGame: IGDBGame): Promise<Game> {
   const mapped = gameFromIGDB(igdbGame)
-  const { id: _id, createdAt: _createdAt, updatedAt: _updatedAt, popularityScore, ...data } = mapped
+  const {
+    id: _id,
+    createdAt: _createdAt,
+    updatedAt: _updatedAt,
+    popularityScore,
+    reviewLinks: _reviewLinks,
+    reviewLinksFetchedAt: _reviewLinksFetchedAt,
+    ...data
+  } = mapped
 
   return db.game.upsert({
     where: { igdbId: igdbGame.id },

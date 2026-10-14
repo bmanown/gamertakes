@@ -1,44 +1,21 @@
 'use client'
 import { useState } from 'react'
-import { GameCard } from '@/components/game/GameCard'
+import { GameCard, type GameCardGame } from '@/components/game/GameCard'
 import { StatusPicker } from '@/components/game/StatusPicker'
 import { PlaytimeDisplay } from '@/components/game/PlaytimeDisplay'
-import type { Game, GameEntry } from '@gamertakes/db'
 
-const sampleGame = {
+const sampleGame: GameCardGame = {
   id: 'preview-1',
-  igdbId: 1,
   slug: 'hades',
   title: 'Hades',
-  description: null,
   coverImage: null,
-  releaseDate: null,
   platforms: ['PC', 'PlayStation 5', 'Switch'],
-  genres: ['Roguelike'],
-  developer: 'Supergiant',
-  publisher: 'Supergiant',
-  openCriticId: null,
-  openCriticScore: 93,
-  openCriticPercent: 98,
-  openCriticTier: 'Mighty',
-  openCriticLastSync: null,
-  igdbCategory: 0,
   isOfficial: true,
-  igdbLastSync: new Date(),
-  similarGames: [],
-  screenshots: [],
-  popularityScore: 12,
-  aggregatedRating: 93,
-  aggregatedRatingCount: 44,
-  reviewLinks: [],
-  reviewLinksFetchedAt: null,
-  createdAt: new Date(),
-  updatedAt: new Date(),
   communityRating: 4.6,
   totalRatings: 128,
-} as Game & { communityRating: number; totalRatings: number }
+}
 
-const sampleEntry = { status: 'PLAYING' } as GameEntry
+const sampleEntry = { status: 'PLAYING' }
 
 export function GameComponentsPreview() {
   const [status, setStatus] = useState<'PLAYING' | 'COMPLETED' | 'WANT_TO_PLAY' | 'DROPPED' | 'SHELVED' | null>('PLAYING')

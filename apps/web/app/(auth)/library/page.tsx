@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { trpc } from '@/lib/trpc'
 import { useSession } from 'next-auth/react'
-import { GameCard } from '@/components/game/GameCard'
+import { GameCard, type GameCardEntry, type GameCardGame } from '@/components/game/GameCard'
 
 const STATUS_TABS = [
   { value: undefined, label: 'All' },
@@ -21,7 +21,7 @@ export default function LibraryPage() {
     { userId: session?.user?.id ?? '', status: activeStatus as any },
     { enabled: !!session?.user?.id }
   )
-  const entries = data as Array<{ id: string; game: never }> | undefined
+  const entries = data as Array<{ id: string; game: GameCardGame } & GameCardEntry> | undefined
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -55,7 +55,7 @@ export default function LibraryPage() {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {entries?.map((entry) => (
-            <GameCard key={entry.id} game={entry.game as never} entry={entry as never} />
+            <GameCard key={entry.id} game={entry.game} entry={entry} />
           ))}
         </div>
       )}

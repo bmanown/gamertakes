@@ -2,7 +2,21 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { StarRating } from '@/components/ui/StarRating'
 import { clsx } from 'clsx'
-import type { Game, GameEntry } from '@gamertakes/db'
+
+export type GameCardGame = {
+  id: string
+  slug: string
+  title: string
+  coverImage: string | null
+  platforms: string[]
+  isOfficial?: boolean | null
+  communityRating?: number | null
+  totalRatings?: number
+}
+
+export type GameCardEntry = {
+  status?: string | null
+} | null
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   PLAYING: { label: 'Playing', color: 'bg-blue-100 text-blue-800' },
@@ -13,8 +27,8 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 }
 
 interface GameCardProps {
-  game: Game & { communityRating?: number | null; totalRatings?: number }
-  entry?: GameEntry | null
+  game: GameCardGame
+  entry?: GameCardEntry
 }
 
 export function GameCard({ game, entry }: GameCardProps) {

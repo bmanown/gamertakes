@@ -13,7 +13,9 @@
     "STEAM_API_KEY",
     "PSN_ENCRYPTION_KEY",
     "CLOUDINARY_URL",
-    "CRON_SECRET"
+    "CRON_SECRET",
+    "GOOGLE_CSE_API_KEY",
+    "GOOGLE_CSE_ID"
   ],
   "tasks": {
     "build": {

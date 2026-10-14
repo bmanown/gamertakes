@@ -2,14 +2,14 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import type { Session } from 'next-auth'
-import type { Game, GameEntry, GameStatus } from '@gamertakes/db'
+import type { GameEntry, GameStatus } from '@gamertakes/db'
 import { StatusPicker } from '@/components/game/StatusPicker'
 import { StarRating } from '@/components/ui/StarRating'
 import { PlaytimeDisplay } from '@/components/game/PlaytimeDisplay'
 import { trpc } from '@/lib/trpc'
 
 interface GameDetailActionsProps {
-  game: Game
+  game: { id: string }
   userEntry: (GameEntry & { review?: { id: string } | null }) | null
   session: Session | null
 }

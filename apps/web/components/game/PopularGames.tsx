@@ -2,7 +2,7 @@
 import { Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
-import { GameCard } from '@/components/game/GameCard'
+import { GameCard, type GameCardGame } from '@/components/game/GameCard'
 import { OfficialFilterChips } from '@/components/game/OfficialFilterChips'
 import { popularHref } from '@/lib/catalog-url'
 
@@ -10,10 +10,11 @@ function PopularGamesInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const officialOnly = searchParams.get('official') !== '0'
-  const { data: popular, isLoading } = trpc.games.getPopular.useQuery({
+  const { data, isLoading } = trpc.games.getPopular.useQuery({
     limit: 12,
     official: officialOnly,
   })
+  const popular = data as GameCardGame[] | undefined
 
   return (
     <section className="max-w-7xl mx-auto px-4 py-12">
@@ -33,7 +34,7 @@ function PopularGamesInner() {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {popular?.map((game) => (
-            <GameCard key={game.id} game={game as never} />
+            <GameCard key={game.id} game={game} />
           ))}
         </div>
       )}

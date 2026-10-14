@@ -81,5 +81,7 @@ describe('upsertGameFromIGDB', () => {
         }),
       }),
     )
+    expect(upsert.mock.calls[0][0].create).not.toHaveProperty('reviewLinks')
+    expect(upsert.mock.calls[0][0].create).not.toHaveProperty('reviewLinksFetchedAt')
   })
 })
