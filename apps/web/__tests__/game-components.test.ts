@@ -41,6 +41,8 @@ function game(overrides: Partial<Game> = {}): Game {
     popularityScore: 0,
     aggregatedRating: null,
     aggregatedRatingCount: null,
+    reviewLinks: [],
+    reviewLinksFetchedAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,

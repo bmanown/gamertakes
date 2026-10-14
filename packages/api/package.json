@@ -17,7 +17,8 @@
   "exports": {
     ".": "./root.ts",
     "./trpc": "./trpc.ts",
-    "./password": "./lib/password.ts"
+    "./password": "./lib/password.ts",
+    "./review-links": "./lib/review-links.ts"
   },
   "devDependencies": {
     "vitest": "1.6.0"

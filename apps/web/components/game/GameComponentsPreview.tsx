@@ -30,6 +30,8 @@ const sampleGame = {
   popularityScore: 12,
   aggregatedRating: 93,
   aggregatedRatingCount: 44,
+  reviewLinks: [],
+  reviewLinksFetchedAt: null,
   createdAt: new Date(),
   updatedAt: new Date(),
   communityRating: 4.6,

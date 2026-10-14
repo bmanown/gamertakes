@@ -125,6 +125,8 @@ export function gameFromIGDB(igdbGame: IGDBGame): Game {
     popularityScore: igdbGame.total_rating_count ?? igdbGame.aggregated_rating_count ?? igdbGame.follows ?? 0,
     aggregatedRating: igdbGame.aggregated_rating ?? null,
     aggregatedRatingCount: igdbGame.aggregated_rating_count ?? null,
+    reviewLinks: [],
+    reviewLinksFetchedAt: null,
     createdAt: now,
     updatedAt: now,
   }

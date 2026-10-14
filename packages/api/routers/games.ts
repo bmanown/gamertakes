@@ -1,6 +1,8 @@
 import { z } from 'zod'
 import { createTRPCRouter, publicProcedure } from '../trpc'
 import { cacheIGDBGames, gameFromIGDB, searchIGDB, upsertGameFromIGDB } from '../lib/igdb'
+import { fetchAndCacheReviewLinks } from '../lib/review-links'
+import { runInBackground } from '../lib/background'
 import { fillCriticScore } from '../lib/opencritic'
 import { officialGameWhere } from '../lib/official'
 import { TRPCError } from '@trpc/server'
@@ -58,6 +60,10 @@ export const gamesRouter = createTRPCRouter({
       if (!game.openCriticLastSync) {
         await fillCriticScore(game)
         game = (await ctx.db.game.findUnique({ where: { id: game.id } })) ?? game
+      }
+
+      if (!game.reviewLinksFetchedAt) {
+        runInBackground(fetchAndCacheReviewLinks(game.id, game.title))
       }
 
       const [communityRating, totalRatings] = await Promise.all([

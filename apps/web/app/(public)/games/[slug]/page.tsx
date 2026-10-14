@@ -10,6 +10,8 @@ import { CriticScoreBadge } from '@/components/ui/CriticScoreBadge'
 import { StarRating } from '@/components/ui/StarRating'
 import { GameDetailActions } from './GameDetailActions'
 import { ReviewsList } from './ReviewsList'
+import { CriticsSection } from '@/components/game/CriticsSection'
+import { asReviewLinks } from '@gamertakes/api/review-links'
 
 export const revalidate = 86400
 
@@ -106,6 +108,8 @@ export default async function GamePage({ params }: PageProps) {
           {gameData.description && (
             <p className="text-gray-600 leading-relaxed">{gameData.description}</p>
           )}
+
+          <CriticsSection links={asReviewLinks(gameData.reviewLinks)} />
 
           <ReviewsList gameId={gameData.id} session={session} />
 
