@@ -1,17 +1,20 @@
 import { db, type Game } from '@gamertakes/db'
 import { fetchIGDBGame } from './igdb'
 
-const OC_BASE = process.env.OPENCRITIC_API_KEY
-  ? 'https://opencritic-api.p.rapidapi.com'
-  : 'https://api.opencritic.com/api'
-
-function ocHeaders(): HeadersInit {
+export function openCriticHeaders(): HeadersInit {
   const headers: Record<string, string> = { 'User-Agent': 'GamerTakes/1.0' }
   if (process.env.OPENCRITIC_API_KEY) {
     headers['X-RapidAPI-Key'] = process.env.OPENCRITIC_API_KEY
     headers['X-RapidAPI-Host'] = 'opencritic-api.p.rapidapi.com'
   }
   return headers
+}
+
+export function openCriticUrl(path: string) {
+  const base = process.env.OPENCRITIC_API_KEY
+    ? 'https://opencritic-api.p.rapidapi.com'
+    : 'https://api.opencritic.com/api'
+  return `${base}${path}`
 }
 
 interface OCGame {
@@ -22,20 +25,29 @@ interface OCGame {
   tier: string
 }
 
-async function searchOpenCritic(title: string): Promise<OCGame[]> {
-  const res = await fetch(`${OC_BASE}/game/search?criteria=${encodeURIComponent(title)}`, {
-    headers: ocHeaders(),
+export async function searchOpenCritic(title: string): Promise<OCGame[]> {
+  const res = await fetch(openCriticUrl(`/game/search?criteria=${encodeURIComponent(title)}`), {
+    headers: openCriticHeaders(),
   })
-  if (!res.ok) return []
+  if (!res.ok) throw new Error(`OpenCritic search failed (${res.status})`)
   return res.json()
 }
 
 async function getOpenCriticGame(id: number): Promise<OCGame | null> {
-  const res = await fetch(`${OC_BASE}/game/${id}`, {
-    headers: ocHeaders(),
+  const res = await fetch(openCriticUrl(`/game/${id}`), {
+    headers: openCriticHeaders(),
   })
   if (!res.ok) return null
   return res.json()
+}
+
+export async function fetchOpenCriticReviews(id: number) {
+  const res = await fetch(openCriticUrl(`/review/game/${id}`), {
+    headers: openCriticHeaders(),
+  })
+  if (!res.ok) throw new Error(`OpenCritic reviews failed (${res.status})`)
+  const data = await res.json()
+  return Array.isArray(data) ? data : []
 }
 
 export async function matchAndSyncOpenCritic(game: Game): Promise<void> {

@@ -8,7 +8,7 @@ function sleep(ms: number) {
 export async function fillReviewLinksBatch() {
   const games = await db.game.findMany(uncachedReviewLinksQuery())
   for (const game of games) {
-    await fetchAndCacheReviewLinks(game.id, game.title)
+    await fetchAndCacheReviewLinks(game.id, game.title, game.openCriticId)
     await sleep(250)
   }
   return { selected: games.length }

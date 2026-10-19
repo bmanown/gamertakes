@@ -1,14 +1,15 @@
 import { db } from '@gamertakes/db'
 import type { ReviewLink } from '@gamertakes/types'
+import { fetchOpenCriticReviews, searchOpenCritic } from './opencritic'
 
-export const REVIEW_LINKS_DAILY_LIMIT = 95
+export const REVIEW_LINKS_DAILY_LIMIT = 25
 
 export function uncachedReviewLinksQuery() {
   return {
     where: { reviewLinksFetchedAt: null },
     orderBy: { popularityScore: 'desc' as const },
     take: REVIEW_LINKS_DAILY_LIMIT,
-    select: { id: true, title: true },
+    select: { id: true, title: true, openCriticId: true },
   }
 }
 
@@ -38,32 +39,58 @@ function startOfTodayUtc() {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
 }
 
-export async function fetchAndCacheReviewLinks(gameId: string, gameName: string) {
+function outletName(review: { Outlet?: { name?: string }; outlet?: { name?: string } }) {
+  return review.Outlet?.name || review.outlet?.name || null
+}
+
+export function reviewLinksFromOpenCritic(reviews: unknown): ReviewLink[] {
+  if (!Array.isArray(reviews)) return []
+  return reviews.flatMap((review) => {
+    if (!review || typeof review !== 'object') return []
+    const item = review as {
+      title?: string
+      externalUrl?: string
+      Outlet?: { name?: string }
+      outlet?: { name?: string }
+    }
+    if (!item.externalUrl) return []
+    const source = outletName(item) || reviewLinkSource(item.externalUrl)
+    return [{
+      source,
+      title: item.title || source,
+      url: item.externalUrl,
+    }]
+  }).slice(0, 8)
+}
+
+export async function fetchAndCacheReviewLinks(
+  gameId: string,
+  gameName: string,
+  openCriticId?: number | null,
+) {
   try {
-    const key = process.env.GOOGLE_CSE_API_KEY
-    const cx = process.env.GOOGLE_CSE_ID
-    if (!key || !cx) return
+    if (!process.env.OPENCRITIC_API_KEY) return
 
     const usedToday = await db.game.count({
       where: { reviewLinksFetchedAt: { gte: startOfTodayUtc() } },
     })
     if (usedToday >= REVIEW_LINKS_DAILY_LIMIT) return
 
-    const url = `https://www.googleapis.com/customsearch/v1?key=${encodeURIComponent(key)}&cx=${encodeURIComponent(cx)}&q=${encodeURIComponent(`${gameName} review`)}&num=6`
-    const res = await fetch(url)
-    if (!res.ok) return
-    const data = await res.json() as { items?: { title?: string; link?: string }[] }
-    const reviewLinks = (data.items ?? [])
-      .filter((item) => item.title && item.link)
-      .map((item) => ({
-        source: reviewLinkSource(item.link!),
-        title: item.title!,
-        url: item.link!,
-      }))
+    let ocId = openCriticId ?? null
+    if (!ocId) {
+      const results = await searchOpenCritic(gameName)
+      ocId = results.find((game) => game.name.toLowerCase() === gameName.toLowerCase())?.id ?? null
+    }
+
+    const reviewLinks = ocId ? reviewLinksFromOpenCritic(await fetchOpenCriticReviews(ocId)) : []
 
     await db.game.update({
       where: { id: gameId },
-      data: { reviewLinks, reviewLinksFetchedAt: new Date() },
+      data: {
+        reviewLinks,
+        reviewLinksFetchedAt: new Date(),
+        ...(ocId ? { openCriticId: ocId } : {}),
+      },
     })
   } catch (err) {
     console.error('review links fetch failed', err)

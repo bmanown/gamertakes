@@ -7,8 +7,8 @@ describe('uncachedReviewLinksQuery', () => {
       where: { reviewLinksFetchedAt: null },
       orderBy: { popularityScore: 'desc' },
       take: REVIEW_LINKS_DAILY_LIMIT,
-      select: { id: true, title: true },
+      select: { id: true, title: true, openCriticId: true },
     })
-    expect(REVIEW_LINKS_DAILY_LIMIT).toBe(95)
+    expect(REVIEW_LINKS_DAILY_LIMIT).toBe(25)
   })
 })

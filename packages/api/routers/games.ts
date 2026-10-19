@@ -63,7 +63,7 @@ export const gamesRouter = createTRPCRouter({
       }
 
       if (!game.reviewLinksFetchedAt) {
-        runInBackground(fetchAndCacheReviewLinks(game.id, game.title))
+        runInBackground(fetchAndCacheReviewLinks(game.id, game.title, game.openCriticId))
       }
 
       const [communityRating, totalRatings] = await Promise.all([

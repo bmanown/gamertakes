@@ -13,7 +13,14 @@ const { mockDb, fetchIGDBGame } = vi.hoisted(() => ({
 vi.mock('@gamertakes/db', () => ({ db: mockDb }))
 vi.mock('../lib/igdb', () => ({ fetchIGDBGame }))
 
-import { fillCriticScore, matchAndSyncOpenCritic } from '../lib/opencritic'
+import { fillCriticScore, matchAndSyncOpenCritic, openCriticUrl } from '../lib/opencritic'
+
+describe('openCriticUrl', () => {
+  it('uses RapidAPI when an API key is present', () => {
+    vi.stubEnv('OPENCRITIC_API_KEY', 'oc-key')
+    expect(openCriticUrl('/review/game/42')).toBe('https://opencritic-api.p.rapidapi.com/review/game/42')
+  })
+})
 
 const game = {
   id: 'game1',
